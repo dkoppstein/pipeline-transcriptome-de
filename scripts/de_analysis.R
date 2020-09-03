@@ -27,9 +27,9 @@ strip_version<-function(x) {
     return(tmp)
 }
 
-rownames(cts) <- strip_version(rownames(cts))
+#rownames(cts) <- strip_version(rownames(cts))
 
-cts <- cts[rownames(cts) %in% txdf$TXNAME, ] # FIXME: filter for transcripts which are in the annotation. Why they are not all there? 
+cts <- cts[rownames(cts) %in% txdf$TXNAME, ] # FIXME: filter for transcripts which are in the annotation. Why they are not all there?
 
 # Reorder transcript/gene database to match input counts:
 txdf <- txdf[match(rownames(cts), txdf$TXNAME), ]
@@ -93,10 +93,10 @@ dxr <- DEXSeqResults(dxd, independentFiltering=FALSE)
 
 dev.off()
 pdf("de_analysis/results_dtu.pdf")
-plotMA(dxr, cex=0.8, alpha=0.05) 
+plotMA(dxr, cex=0.8, alpha=0.05)
 plotDispEsts(dxd)
 
-qval <- perGeneQValue(dxr) 
+qval <- perGeneQValue(dxr)
 dxr.g<-data.frame(gene=names(qval), qval)
 dxr.g <- dxr.g[order(dxr.g$qval),]
 
@@ -122,4 +122,3 @@ stageRObj <- stageWiseAdjustment(stageRObj, method="dtu", alpha=0.05)
 suppressWarnings({dex.padj <- getAdjustedPValues(stageRObj, order=FALSE, onlySignificantGenes=FALSE)})
 
 write.table(dex.padj, file="de_analysis/results_dtu_stageR.tsv", sep="\t")
-

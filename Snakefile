@@ -26,7 +26,7 @@ rule dump_versions:
         ver = "versions.txt"
     conda: "env.yml"
     shell:"""
-    conda list > {output.ver} 
+    conda list > {output.ver}
     """
 
 rule build_minimap_index: ## build minimap2 index
@@ -71,10 +71,12 @@ rule count_reads:
     params:
         tsv_dir = "counts/{sample}_salmon",
         libtype = config["salmon_libtype"],
+        trs=("<(zcat {})".format(config["transcriptome"]) if \
+                       config["transcriptome"].endswith("gz") else config["transcriptome"])
     conda: "env.yml"
     threads: config["threads"]
     shell: """
-        salmon quant --noErrorModel -p {threads} -t {input.trs} -l {params.libtype} -a {input.bam} -o {params.tsv_dir}
+        salmon quant --noErrorModel -p {threads} -t {params.trs} -l {params.libtype} -a {input.bam} -o {params.tsv_dir}
     """
 
 rule merge_counts:
@@ -105,13 +107,20 @@ rule write_coldata:
         df = pd.DataFrame(OrderedDict([('sample', samples),('condition', conditions),('type', types)]))
         df.to_csv(output.coldata, sep="\t", index=False)
 
+rule unzip_annot:
+    input: config["annotation"]
+    output: temp("db/annotation.gtf")
+    shell:
+        "gunzip -c {input} > {output}"
+
 rule write_de_params:
     input:
+        gtf=str(rules.unzip_annot.output)
     output:
         de_params = "de_analysis/de_params.tsv"
     run:
         d = OrderedDict()
-        d["Annotation"] = [config["annotation"]]
+        d["Annotation"] = [str(input.gtf)]
         d["min_samps_gene_expr"] = [config["min_samps_gene_expr"]]
         d["min_samps_feature_expr"] = [config["min_samps_feature_expr"]]
         d["min_gene_expr"] = [config["min_gene_expr"]]
@@ -125,6 +134,7 @@ rule de_analysis:
         de_params = rules.write_de_params.output.de_params,
         coldata = rules.write_coldata.output.coldata,
         tsv = rules.merge_counts.output.tsv,
+        gtf = rules.unzip_annot.output
     output:
         res_dge = "de_analysis/results_dge.tsv",
         pdf_dge = "de_analysis/results_dge.pdf",
@@ -133,6 +143,7 @@ rule de_analysis:
         res_dtu_stager = "de_analysis/results_dtu_stageR.tsv",
         flt_counts = "merged/all_counts_filtered.tsv",
         flt_counts_gens = "merged/all_gene_counts.tsv",
+    log: "log/de_analysis.txt"
     conda: "env.yml"
     shell:"""
     {SNAKEDIR}/scripts/de_analysis.R

@@ -2,33 +2,31 @@
 ## General pipeline parameters:
 
 # Name of the pipeline:
-pipeline: "pipeline-transcriptome-de_phe"
+pipeline: "pipeline-transcriptome-de"
 # ABSOLUTE path to directory holding the working directory:
-workdir_top: "Workspaces"
+workdir_top: "../workspace"
 # Results directory:
-resdir: "results"
+resdir: "../results"
 # Repository URL:
 repo: "https://github.com/nanoporetech/pipeline-transcriptome-de"
 
 ## Pipeline-specific parameters:
 
 # Transcriptome fasta
-transcriptome: "Homo_sapiens.GRCh38.cdna.all.fa"
+transcriptome: "/data/local/rajewsky/genomes/GRCh38/release_34/gencode.v34.transcripts.fa.gz"
 
 # Annotation GFF/GTF
-annotation: "Homo_sapiens.GRCh38.93.gtf"
+annotation: "/data/local/rajewsky/genomes/GRCh38/release_34/gencode.v34.annotation.gtf.gz"
 
 # Control samples
 control_samples:
-    C1: "C1.fq"
-    C2: "C2.fq"
-    C3: "C3.fq"
+    soma_1: ../demux_combined/barcode03_combined.fastq.gz
+    soma_2: ../demux_combined/barcode04_combined.fastq.gz
 
 # Treated samples
 treated_samples:
-    IR1: "IR1.fq"
-    IR2: "IR2.fq"
-    IR3: "IR3.fq"
+    stem_cells_1: ../demux_combined/barcode01_combined.fastq.gz
+    stem_cells_2: ../demux_combined/barcode01_combined.fastq.gz
 
 # Minimap2 indexing options
 minimap_index_opts: ""
@@ -57,5 +55,4 @@ min_gene_expr: 10
 min_feature_expr: 3
 
 # Threads
-threads: 50
-
+threads: 16
